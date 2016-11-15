@@ -35,6 +35,9 @@
     </ul>
 </nav>
 
-<?php echo $user_name; ?>
+<div id="login_div">
+    <?php echo "Welcome, $user_name"; ?>
+    <a href="#">logout</a>
+</div>
 
 

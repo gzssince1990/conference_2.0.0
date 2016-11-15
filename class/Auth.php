@@ -8,18 +8,71 @@
  */
 class Auth
 {
+    //db config
+    private $DB_host = "localhost";
+    private $DB_user = "root";
+    private $DB_pass = "";
+    private $DB_name = "conference";
+
+    //db info
     private $db;
     private $table;
 
-    function __construct($DB_con,$DB_table)
-    {
-        $this->db = $DB_con;
-        $this->table = $DB_table;
+    /**
+     * Auth constructor.
+     */
+    function __construct() {
+        try
+        {
+            $DB_con = new PDO("mysql:host={$this->DB_host};dbname={$this->DB_name}",$this->DB_user,$this->DB_pass);
+            $DB_con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->db = $DB_con;
+            $this->table = "auth";
+        }
+        catch(PDOException $e)
+        {
+            echo $e->getMessage();
+        }
     }
 
-    public function register($uname,$upass,$uchek,$uid,$fname,$lname,$title,
-                             $company,$organ,$uaddr,$phone,$email)
-    {
+    /**
+     * all user login
+     * @param $uname
+     * @param $upass
+     * @param $is_hash
+     * @return int
+     */
+    public function login($uname, $upass, $is_hash=true) {
+        $error_code = 0;
+        if(empty($uname) or empty($upass))
+        {
+            $error_code = -1;
+        }
+        else
+        {
+            $stmt = $this->db->prepare("SELECT * FROM $this->table WHERE username=:uname");
+            $stmt->bindparam(":uname", $uname);
+            $stmt->execute();
+            $row=$stmt->fetch(PDO::FETCH_ASSOC);
+
+            if($stmt->rowCount() > 0)
+            {
+                if($is_hash and password_verify($upass, $row['password'])) {
+                    $_SESSION['username'] = $uname;
+                    $_SESSION['table'] = $this->table;
+                }
+                else {
+                    $error_code = -2;
+                }
+            }
+            else{
+                $error_code = -3;
+            }
+        }
+        return $error_code;
+    }
+
+    public function register($uname,$upass,$uchek,$uid,$fname,$lname,$title,$company,$organ,$uaddr,$phone,$email) {
         if(empty($uname)){
             $err['username'] = 'username is required';
         }
@@ -94,44 +147,7 @@ class Auth
         return $err;
     }
 
-    public function login($uname,$upass,$is_hash)
-    {
-        $error_code = 1;
-        if(empty($uname) or empty($upass))
-        {
-            $error_code = -2;
-        }
-        else
-        {
-            $stmt = $this->db->prepare("SELECT * FROM $this->table WHERE username=:uname");
-            $stmt->bindparam(":uname", $uname);
-            $stmt->execute();
-            $row=$stmt->fetch(PDO::FETCH_ASSOC);
 
-
-            if($stmt->rowCount() > 0)
-            {
-
-                if($is_hash and password_verify($upass, $row['password']))
-                {
-                    $_SESSION['username'] = $uname;
-                    $_SESSION['table'] = $this->table;
-                }
-                elseif(!$is_hash and $upass == $row['password']){
-                    $_SESSION['username'] = $uname;
-                    $_SESSION['table'] = $this->table;
-                }
-                else
-                {
-                    $error_code = -1;
-                }
-            }
-            else{
-                $error_code = 0;
-            }
-        }
-        return $error_code;
-    }
 
     public function get_papers($uname){
         $stmt = $this->db->prepare("SELECT au.username AS uname, p.file_name AS filename "
@@ -200,7 +216,7 @@ class Auth
         }
     }
 
-    public function is_loggedin()
+    public function is_logged_in()
     {
         if(isset($_SESSION['user_session']))
         {

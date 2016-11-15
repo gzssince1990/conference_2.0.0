@@ -1,21 +1,23 @@
 <?php
-//TODO require auth class
+//require auth class
 require_once "class/Auth.php";
-//$auth = new Auth();
+$auth = new Auth();
 
-//TODO according to the auth class return value, decide which header to include;
-if (true){
+//according to the auth class return value, decide which header to include;
+if ($auth->is_logged_in()){
     $user_name = "ge";
     include_once "header.php";
 }
 else {
     include_once "header_login.php";
 }
+?>
+<h1>Welcome to conference!</h1>
 
-//    $action = 'index.php';
-//    $content_source = 'index.html';
+<p>
+    Content goes here. (description)
+</p>
 
-//    include_once 'session_control.php';
-//    include_once $content_source;
-//    include_once 'footer.php';
+<?php
+    include_once 'footer.php';
 ?>
