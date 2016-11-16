@@ -97,6 +97,16 @@ body {
     font-size: small;
 }
 
+/* Success */
+.success {
+    padding: 2px 3px 3px 2px;
+    background-color: #3c8958; /* Green */
+    color: white;
+    margin: 5px 0px 15px 0px;
+    display: inline-block;
+    font-size: small;
+}
+
 /* The close button */
 .closeBtn {
     margin-left: 15px;

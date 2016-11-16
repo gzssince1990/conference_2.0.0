@@ -55,7 +55,6 @@ if(filter_input(INPUT_POST, 'action')){
 //        echo $organization;
 //        echo $address;
 //        echo $phone_number;
-        var_dump($email);
 
         $error_code = $auth->register($username,$password,$password_check,$identity,$first_name,$last_name,$title,
             $company,$organization,$address,$phone_number,$email);
@@ -67,35 +66,84 @@ if(filter_input(INPUT_POST, 'action')){
             header("Location: index.php?error_code={$error_code}");
         }
 
-    } elseif ($action == 'pay_new_card') {
+    } elseif ($action == 'credit_card') {
         //Check if user want to save the card info
-        $save_card = filter_input(INPUT_POST, 'save_card');
+        $card_number = filter_input(INPUT_POST, 'card_number');
+        $security_code = filter_input(INPUT_POST, 'security_code');
+        $expiry_month = filter_input(INPUT_POST, 'expiry_month');
+        $expiry_year = filter_input(INPUT_POST, 'expiry_year');
+        $first_name = filter_input(INPUT_POST, 'first_name');
+        $last_name = filter_input(INPUT_POST, 'last_name');
 
-        $row = $customer->getCustomerInfo();
-
-        if($save_card === 'true'){
-            ChargeWithSave($customer, $auth);
-        } else {
-            ChargeWithoutSave($customer, $auth);
+        //verify expiry date
+        if (($expiry_year > date("y")) or ($expiry_year == date("y") and $expiry_month > date("m"))){
+            $auth->updateUserStatus(1);
+            $error_code = "I00001";
+            $_SESSION['status'] = 1;
+            header("Location: index.php?error_code={$error_code}");
         }
-    } elseif ($action == 'pay_old_card') {
-        /**
-         * Pay with an existing credit card
-         */
-        ChargeExistingCard($customer, $auth, null, null, null);
-    } elseif ($action == 'delete_payment') {
-        DeletePaymentProfile($customer, $auth);
-    } elseif ($action == 'refund') {
-        Refund($customer, $auth);
-    } elseif ($action == 'recharge') {
-        Recharge($customer, $auth);
+        else{
+            $error_code = "AU00220";
+            header("Location: index.php?error_code={$error_code}");
+        }
     }
+    elseif ($action == 'paper_upload') {//Paper upload
+        $username = $_SESSION['username'];
+        $area = filter_input(INPUT_POST, 'area');
+        $subarea = filter_input(INPUT_POST, 'subarea');
+        $target_dir = "uploads/".$username."/";
+        if(!file_exists($target_dir)){
+            mkdir($target_dir,0777);
+        }
+        $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
+        $uploadOk = 1;
+        $fileType = pathinfo($target_file,PATHINFO_EXTENSION);
+
+        // Check if file already exists
+        if (file_exists($target_file)) {
+            echo "Sorry, file already exists.";
+            $uploadOk = 0;
+        }
+        // Check file size
+        if ($_FILES["fileToUpload"]["size"] > 500000) {
+            echo "Sorry, your file is too large.";
+            $uploadOk = 0;
+        }
+        // Allow certain file formats
+        if($fileType != "pdf") {
+            echo "Sorry, only PDF files are allowed.";
+            $uploadOk = 0;
+        }
+        // Check if $uploadOk is set to 0 by an error
+        if ($uploadOk == 0) {
+            echo "Sorry, your file was not uploaded.";
+        // if everything is ok, try to upload file
+        } else {
+            if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+                echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
+                $auth->add_paper($username, $_FILES["fileToUpload"]["name"], $area, $subarea);
+                header('Location: review.php');
+            } else {
+                echo "Sorry, there was an error uploading your file.";
+            }
+        }
+    }
+// elseif ($action == 'delete_payment') {
+//        DeletePaymentProfile($customer, $auth);
+//    } elseif ($action == 'refund') {
+//        Refund($customer, $auth);
+//    } elseif ($action == 'recharge') {
+//        Recharge($customer, $auth);
+//    }
 } elseif (filter_input(INPUT_GET, 'action')) {
     //Handle different get request;
     $action = filter_input(INPUT_GET, 'action');
     if($action == 'logout'){//Log out;
         $auth->logout();
-
         header('Location: index.php');
+        die();
     }
+} else {
+    header('Location: index.php');
+    die();
 }

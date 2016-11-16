@@ -49,6 +49,13 @@
             </div>
         <?php
         }
+        elseif ($error_code == "AU00210"){ ?>
+            <div class="alert">
+                Registration error, please try again!
+                <span class="closeBtn" onclick="this.parentElement.style.display='none';">&times;</span>
+            </div>
+        <?php
+        }
     }
     ?>
 </div>

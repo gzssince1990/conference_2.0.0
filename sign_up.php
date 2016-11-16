@@ -14,8 +14,8 @@ if ($auth->is_logged_in()){
 }
 
 include_once 'header_login.php';
-?>
-    <br>
+?><br>
+
 <?php
 if (filter_input(INPUT_GET, 'error_code')){
     $error_code = filter_input(INPUT_GET, 'error_code');
@@ -27,12 +27,14 @@ if (filter_input(INPUT_GET, 'error_code')){
         <?php
     }
 }
-?>
+?><br>
 
-    <br>
+<!-- user info input area -->
+<div>
     <form action="controller.php" method="post" autocomplete="on">
         <input type="hidden" name="action" value="sign_up">
 
+        <h2>User Information</h2>
         <table>
             <tbody>
             <tr>
@@ -101,14 +103,15 @@ if (filter_input(INPUT_GET, 'error_code')){
                 <th>Email Address</th>
                 <th><input type="email" name="email"></th>
             </tr>
-
             <tr>
-                <th><input type="submit" value="Submit"></th>
+                <th><input type="submit" value="Continue"></th>
                 <th><input type="reset" value="Clear"></th>
             </tr>
             </tbody>
         </table>
     </form>
+</div>
+
 
 <?php
 include_once 'footer.php';

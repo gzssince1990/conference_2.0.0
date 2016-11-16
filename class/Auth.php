@@ -17,6 +17,7 @@ class Auth
     //db info
     private $db;
     private $table;
+    private $table_paper;
 
     /**
      * Auth constructor.
@@ -28,6 +29,7 @@ class Auth
             $DB_con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->db = $DB_con;
             $this->table = "auth";
+            $this->table_paper = "paper";
         }
         catch(PDOException $e)
         {
@@ -61,7 +63,7 @@ class Auth
             {
                 if($is_hash and password_verify($upass, $row['password'])) {
                     $_SESSION['username'] = $uname;
-//                    $_SESSION['table'] = $this->table;
+                    $_SESSION['status'] = $row['status'];
                 }
                 else {
                     $error_code = -2;
@@ -89,6 +91,11 @@ class Auth
     {
         session_destroy();
         unset($_SESSION['username']);
+        unset($_SESSION['status']);
+    }
+
+    public function is_active(){
+        return isset($_SESSION['status']) and $_SESSION['status'] == 1;
     }
 
     /**
@@ -135,7 +142,7 @@ class Auth
 
                 $query = "SELECT * FROM $this->table WHERE username='$uname'";
                 $result = $this->db->query($query);
-                $row = $result->fetch();
+                $row = $result->fetch(PDO::FETCH_ASSOC);
 
                 if($row['username'] == $uname){
 //                    $err['username'] = 'Username exists, please try another one';
@@ -162,7 +169,7 @@ class Auth
                     $stmt->bindparam(":email", $email);
 
                     $result = $stmt->execute();
-                    
+
                     if($result == 1){
                         $_SESSION['username'] = $uname;
                         return 0;
@@ -181,27 +188,146 @@ class Auth
         return $error_code;
     }
 
+    /**
+     * @param $status
+     */
+    public function updateUserStatus($status){
+        $stmt = $this->db->prepare("UPDATE {$this->table} SET status={$status} WHERE username='{$_SESSION['username']}'");
+        $stmt->execute();
+    }
+
+    /**
+     * add submitted paper
+     * @param $uname
+     * @param $file_name
+     * @param $area
+     * @param $subarea
+     */
+    public function add_paper($uname, $file_name, $area, $subarea) {
+        echo "<br>";
+        echo "{$uname}<br>";
+        echo "{$file_name}<br>";
+        echo "{$area}<br>";
+        echo "{$subarea}<br>";
 
 
-    public function get_papers($uname){
-        $stmt = $this->db->prepare("SELECT au.username AS uname, p.file_name AS filename "
-            . "FROM paper p "
-            . "JOIN group_paper gp ON gp.paper_id=p.paper_id  "
-            . "JOIN reviewer rv ON rv.reviewer_id=gp.group_id "
-            . "JOIN auth au ON au.user_id=p.user_id "
-            . "WHERE rv.username=:uname");
+        $uid = $this->get_id_by_uname($uname);
+        try {
+            $stmt = $this->db->prepare("INSERT INTO "
+                . "$this->table_paper(user_id,file_name, area, subarea) "
+                . "VALUES(:uid,:file_name,:area,:subarea)");
+
+            $stmt->bindparam(":uid", $uid);
+            $stmt->bindparam(":file_name", $file_name);
+            $stmt->bindparam(":area", $area);
+            $stmt->bindparam(":subarea", $subarea);
+
+            $stmt->execute();
+        } catch (PDOException $exc) {
+            echo $exc->getMessage();
+        }
+    }
+
+    /**
+     * get id by username
+     * @param $uname
+     * @return mixed
+     */
+    public function get_id_by_uname($uname) {
+        $stmt = $this->db->prepare("SELECT user_id FROM auth WHERE username=:uname");
 
         $stmt->bindparam(":uname", $uname);
         $stmt->execute();
-        $rows=$stmt->fetchAll(PDO::FETCH_ASSOC);
+        $row=$stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row['user_id'];
+    }
+
+    /**
+     * @param $uname
+     * @return mixed
+     */
+    public function get_user_by_uname($uname) {
+        $stmt = $this->db->prepare("SELECT * FROM auth WHERE username=:uname");
+
+        $stmt->bindparam(":uname", $uname);
+        $stmt->execute();
+        $row=$stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row;
+    }
 
 
-        //echo $stmt->rowCount();
-        foreach($rows as $row){
-            $file[] = $row['uname'].'/'.$row['filename'];
+    public function get_papers($uname){
+        $user = $this->get_user_by_uname($uname);
+
+        $files = array();
+        $error_code = "I00001";
+
+        if ($user['identity'] == "Reviewer"){
+            //        $stmt = $this->db->prepare("SELECT au.username AS uname, p.file_name AS filename "
+            //            . "FROM paper p "
+            //            . "JOIN group_paper gp ON gp.paper_id=p.paper_id  "
+            //            . "JOIN reviewer rv ON rv.reviewer_id=gp.group_id "
+            //            . "JOIN auth au ON au.user_id=p.user_id "
+            //            . "WHERE rv.username=:uname");
+
+            $stmt = $this->db->prepare("SELECT p.file_name, au.username FROM {$this->table_paper} p "
+                . "JOIN auth au ON au.user_id=p.user_id "
+                . "WHERE p.reviewer_id=:reviewer_id");
+
+            $stmt->bindparam(":reviewer_id", $user['user_id']);
+            $stmt->execute();
+            $rows=$stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $dir = "uploads/";
+
+            foreach($rows as $row){
+                $files[] = array(
+                    'file_name' => "{$row['username']}/{$row['file_name']}",
+                    'file_path' => "{$dir}/{$row['username']}/{$row['file_name']}"
+                );
+            }
+
+            if (!$files) {
+                $error_code = "PA00200";
+            }
+        }
+        elseif ($user['identity'] == "Admin") {
+            $error_code = "PA00210";
+        }
+        else {
+            $dir = 'uploads/'.$uname.'/';
+
+            if(!file_exists($dir)){
+                $error_code = "PA00220";
+            }
+            else {
+                $files_raw = scandir($dir);
+
+//                var_dump($files_raw);
+//                echo "<br>";
+
+                if(count($files_raw)<3){
+                    $error_code = "PA00220";
+                }
+                else {
+                    foreach ($files_raw as $file_name){
+                        if($file_name!='.' and $file_name!='..'){
+                            $files[] = array(
+                                'file_name' => $file_name,
+                                'file_path' => "{$dir}{$file_name}"
+                            );
+                        }
+                    }
+                }
+            }
         }
 
-        return $file;
+        $response = array('error_code'=>$error_code, 'files'=>$files);
+
+//        var_dump($response);
+        return $response;
     }
 
     public function add_comment($uname,$comment,$phone,$email) {
@@ -222,32 +348,6 @@ class Auth
         }
 
 
-    }
-
-    public function get_id_by_uname($uname) {
-        $stmt = $this->db->prepare("SELECT user_id FROM auth WHERE username=:uname");
-
-        $stmt->bindparam(":uname", $uname);
-        $stmt->execute();
-        $row=$stmt->fetch(PDO::FETCH_ASSOC);
-
-        return $row['user_id'];
-    }
-
-    public function add_paper($uname, $file_name) {
-        $uid = $this->get_id_by_uname($uname);
-        try {
-            $stmt = $this->db->prepare("INSERT INTO "
-                . "$this->table(user_id,file_name) "
-                . "VALUES(:uid,:file_name)");
-
-            $stmt->bindparam(":uid", $uid);
-            $stmt->bindparam(":file_name", $file_name);
-
-            $stmt->execute();
-        } catch (PDOException $exc) {
-            echo $exc->getMessage();
-        }
     }
 
     public function redirect($url)

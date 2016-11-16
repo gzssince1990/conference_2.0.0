@@ -1,16 +1,5 @@
 <?php
-//require auth class
-require_once "class/Auth.php";
-
-session_start();
-
-$auth = new Auth();
-
-//according to the auth class return value, decide which header to include;
-if (!$auth->is_logged_in()){
-    header('Location: index.php');
-    die();
-}
+include_once "header_auth.php";
 
 $page_title = "IT Conferences";
 include_once "header.php";
