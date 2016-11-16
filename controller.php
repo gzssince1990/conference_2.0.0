@@ -57,8 +57,15 @@ if(filter_input(INPUT_POST, 'action')){
 //        echo $phone_number;
         var_dump($email);
 
-        $error = $auth->register($username,$password,$password_check,$identity,$first_name,$last_name,$title,
+        $error_code = $auth->register($username,$password,$password_check,$identity,$first_name,$last_name,$title,
             $company,$organization,$address,$phone_number,$email);
+
+        if (!$error_code){
+            header('Location: index.php');
+        }
+        else {
+            header("Location: index.php?error_code={$error_code}");
+        }
 
     } elseif ($action == 'pay_new_card') {
         //Check if user want to save the card info

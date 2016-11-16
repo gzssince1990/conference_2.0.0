@@ -109,32 +109,37 @@ class Auth
      */
     public function register($uname,$upass,$uchek,$uid,$fname,$lname,$title,$company,$organ,$uaddr,$phone,$email) {
         if(empty($uname)){
-            $err['username'] = 'username is required';
+//            $err['username'] = 'username is required';
+            $error_code = "AU00210";
         }
         elseif(empty($upass)) {
-            $err['password'] = 'password is required';
+//            $err['password'] = 'password is required';
+            $error_code = "AU00210";
         }
         elseif(empty($uchek)){
-            $err['passchek'] = 'Please reenter your password';
+//            $err['passchek'] = 'Please reenter your password';
+            $error_code = "AU00210";
         }
         elseif ($upass != $uchek) {
-            $err['passchek'] = 'Passwords does not match';
+//            $err['passchek'] = 'Passwords does not match';
+            $error_code = "AU00210";
 
         }
         elseif(empty($uid)){
-            $err['identity'] = 'Identity is required';
+//            $err['identity'] = 'Identity is required';
+            $error_code = "AU00210";
         }
         else{
             try {
-                $err = [];
+                $error_code = [];
 
                 $query = "SELECT * FROM $this->table WHERE username='$uname'";
-                echo $this->table;
                 $result = $this->db->query($query);
                 $row = $result->fetch();
 
                 if($row['username'] == $uname){
-                    $err['username'] = 'Username exists, please try another one';
+//                    $err['username'] = 'Username exists, please try another one';
+                    $error_code = "AU00210";
                 }
                 else {
                     $new_password = password_hash($upass, PASSWORD_DEFAULT);
@@ -157,27 +162,23 @@ class Auth
                     $stmt->bindparam(":email", $email);
 
                     $result = $stmt->execute();
-
-
-                    //$query = "INSERT INTO auth(username,password)"
-                    //. "VALUES(:username,:password)";
-                    //$prepare = $db->prepare($query);
-                    //$result = $prepare->execute(array(':username'=>$username,':password'=>$password));
+                    
                     if($result == 1){
                         $_SESSION['username'] = $uname;
-                        header('Location: index.php');
+                        return 0;
+//                        header('Location: index.php');
                     }
-                    else {
-                        echo 'Something wrong!';
-                    }
+//                    else {
+//                        echo 'Something wrong!';
+//                    }
                 }
-
             }catch (PDOException $ex){
                 echo $ex->getMessage();
+                $error_code = "AU00210";
             }
         }
 
-        return $err;
+        return $error_code;
     }
 
 
