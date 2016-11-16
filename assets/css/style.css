@@ -89,25 +89,27 @@ body {
 
 /* The alert message box */
 .alert {
-    padding: 20px;
+    padding: 2px 3px 3px 2px;
     background-color: #f44336; /* Red */
     color: white;
-    margin-bottom: 15px;
+    margin: 5px 0px 15px 0px;
+    display: inline-block;
+    font-size: small;
 }
 
 /* The close button */
-.closebtn {
+.closeBtn {
     margin-left: 15px;
     color: white;
     font-weight: bold;
-    float: right;
-    font-size: 22px;
+    /*float: right;*/
+    font-size: medium;
     line-height: 20px;
     cursor: pointer;
     transition: 0.3s;
 }
 
 /* When moving the mouse over the close button */
-.closebtn:hover {
+.closeBtn:hover {
     color: black;
 }

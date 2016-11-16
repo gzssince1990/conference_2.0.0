@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>IT Conferences</title>
+    <title><?php echo $page_title; ?></title>
     <link href="assets/css/style.css" rel="stylesheet" />
 </head>
 <body>
@@ -36,8 +36,8 @@
 </nav>
 
 <div id="login_div">
-    <?php echo "Welcome, $user_name"; ?>
-    <a href="#">logout</a>
+    <?php echo "Welcome, {$_SESSION['username']}"; ?>
+    <a href="controller.php?action=logout">logout</a>
 </div>
 
 

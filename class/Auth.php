@@ -37,12 +37,13 @@ class Auth
 
     /**
      * all user login
+     * @param $login_as
      * @param $uname
      * @param $upass
      * @param $is_hash
      * @return int
      */
-    public function login($uname, $upass, $is_hash=true) {
+    public function login($login_as, $uname, $upass, $is_hash=true) {
         $error_code = 0;
         if(empty($uname) or empty($upass))
         {
@@ -50,8 +51,9 @@ class Auth
         }
         else
         {
-            $stmt = $this->db->prepare("SELECT * FROM $this->table WHERE username=:uname");
+            $stmt = $this->db->prepare("SELECT * FROM $this->table WHERE username=:uname AND identity=:identity");
             $stmt->bindparam(":uname", $uname);
+            $stmt->bindparam(":identity", $login_as);
             $stmt->execute();
             $row=$stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -59,7 +61,7 @@ class Auth
             {
                 if($is_hash and password_verify($upass, $row['password'])) {
                     $_SESSION['username'] = $uname;
-                    $_SESSION['table'] = $this->table;
+//                    $_SESSION['table'] = $this->table;
                 }
                 else {
                     $error_code = -2;
@@ -72,6 +74,39 @@ class Auth
         return $error_code;
     }
 
+    /**
+     * @return bool
+     */
+    public function is_logged_in()
+    {
+        return isset($_SESSION['username']);
+    }
+
+    /**
+     * logout the current user
+     */
+    public function logout()
+    {
+        session_destroy();
+        unset($_SESSION['username']);
+    }
+
+    /**
+     * register
+     * @param $uname
+     * @param $upass
+     * @param $uchek
+     * @param $uid
+     * @param $fname
+     * @param $lname
+     * @param $title
+     * @param $company
+     * @param $organ
+     * @param $uaddr
+     * @param $phone
+     * @param $email
+     * @return array
+     */
     public function register($uname,$upass,$uchek,$uid,$fname,$lname,$title,$company,$organ,$uaddr,$phone,$email) {
         if(empty($uname)){
             $err['username'] = 'username is required';
@@ -129,10 +164,8 @@ class Auth
                     //$prepare = $db->prepare($query);
                     //$result = $prepare->execute(array(':username'=>$username,':password'=>$password));
                     if($result == 1){
-                        header('Location: '. filter_input(INPUT_POST, 'ref'));
-                        session_start();
                         $_SESSION['username'] = $uname;
-                        $_SESSION['table'] = $this->table;
+                        header('Location: index.php');
                     }
                     else {
                         echo 'Something wrong!';
@@ -216,23 +249,8 @@ class Auth
         }
     }
 
-    public function is_logged_in()
-    {
-        if(isset($_SESSION['user_session']))
-        {
-            return true;
-        }
-    }
-
     public function redirect($url)
     {
         header("Location: $url");
-    }
-
-    public function logout()
-    {
-        session_destroy();
-        unset($_SESSION['user_session']);
-        return true;
     }
 }

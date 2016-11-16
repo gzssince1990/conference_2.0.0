@@ -1,11 +1,15 @@
 <?php
 //require auth class
 require_once "class/Auth.php";
+
+session_start();
+
 $auth = new Auth();
 
 //according to the auth class return value, decide which header to include;
+//var_dump($auth->is_logged_in()); //debug
 if ($auth->is_logged_in()){
-    $user_name = "ge";
+    $page_title = "IT Conferences";
     include_once "header.php";
 }
 else {

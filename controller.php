@@ -16,12 +16,12 @@ if(filter_input(INPUT_POST, 'action')){
     //Handle different post request
     $action = filter_input(INPUT_POST, 'action');
 
-    //Login;
-    if($action == 'login'){
+    if($action == 'login'){//Login;
+        $login_as = filter_input(INPUT_POST, 'login_as');
         $username = filter_input(INPUT_POST, 'username');
         $password = filter_input(INPUT_POST, 'password');
 
-        $error_code = $auth->login($username, $password);
+        $error_code = $auth->login($login_as, $username, $password);
 
         if (!$error_code){
             header('Location: index.php');
@@ -29,52 +29,37 @@ if(filter_input(INPUT_POST, 'action')){
         else {
             header('Location: index.php?error_code=AU00200');
         }
-        echo json_encode(array(
-            'message' => $result['message'],
-            'data' => $result['data']
-        ));
-        /**
-         * Check log status;
-         */
-    } elseif($action == 'check_login') {
-        $result = array();
+    } elseif($action == 'sign_up') {//Sign up
+        $username = filter_input(INPUT_POST, 'username');
+        $password = filter_input(INPUT_POST, 'password');
+        $password_check = filter_input(INPUT_POST, 'password_check');
+        $identity = filter_input(INPUT_POST, 'identity');
+        $first_name = filter_input(INPUT_POST, 'first_name');
+        $last_name = filter_input(INPUT_POST, 'last_name');
+        $title = filter_input(INPUT_POST, 'title');
+        $company = filter_input(INPUT_POST, 'company');
+        $organization = filter_input(INPUT_POST, 'organization');
+        $address = filter_input(INPUT_POST, 'address');
+        $phone_number = filter_input(INPUT_POST, 'phone_number');
+        $email = filter_input(INPUT_POST, 'email');
 
-        if(isset($_SESSION['username'])){
-            $result['message'] = "logged in";
-            $result['status'] = 200;
+        //debug
+//        echo $username;
+//        echo $password;
+//        echo $password_check;
+//        echo $identity;
+//        echo $first_name;
+//        echo $last_name;
+//        echo $title;
+//        echo $company;
+//        echo $organization;
+//        echo $address;
+//        echo $phone_number;
+        var_dump($email);
 
-            $result['data']['payment_method'] =
-                $customer->getPaymentMethod(null, $_SESSION['username']);
+        $error = $auth->register($username,$password,$password_check,$identity,$first_name,$last_name,$title,
+            $company,$organization,$address,$phone_number,$email);
 
-            $result['data']['username'] = $_SESSION['username'];
-        } else {
-            $result['message'] = "not logged in";
-            $result['status'] = 401;
-            $result['data'] = null;
-        }
-
-        http_response_code($result['status']);
-        echo json_encode(array(
-            'message' => $result['message'],
-            'data' => $result['data']
-        ));
-        /**
-         * Log out
-         */
-    } elseif($action == 'logout'){
-        if(isset($_SESSION['username'])){
-            unset($_SESSION['username']);
-            unset($_SESSION['timeout']);
-        }
-
-        http_response_code(200);
-        echo json_encode(array(
-            'message' => 'successful'
-        ));
-        /**
-         * Pay with a new credit card
-         * Use card number, expiration date and security code
-         */
     } elseif ($action == 'pay_new_card') {
         //Check if user want to save the card info
         $save_card = filter_input(INPUT_POST, 'save_card');
@@ -100,4 +85,10 @@ if(filter_input(INPUT_POST, 'action')){
     }
 } elseif (filter_input(INPUT_GET, 'action')) {
     //Handle different get request;
+    $action = filter_input(INPUT_GET, 'action');
+    if($action == 'logout'){//Log out;
+        $auth->logout();
+
+        header('Location: index.php');
+    }
 }
