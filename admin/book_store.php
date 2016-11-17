@@ -82,7 +82,7 @@ $book_list = $book->get_book_list();
     <tr>
         <form action="book_store.php" method="post">
             <input type="hidden" name="action" value="book_add">
-            <td><?php echo count($book_list); ?></td>
+            <td><?php echo count($book_list)+1; ?></td>
             <td><input type="text" name="book_name"></td>
             <td><input type="text" name="book_price"></td>
             <td><input type="submit" value="add"></td>
