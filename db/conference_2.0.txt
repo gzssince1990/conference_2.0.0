@@ -1,0 +1,134 @@
+-- phpMyAdmin SQL Dump
+-- version 4.5.1
+-- http://www.phpmyadmin.net
+--
+-- Host: 127.0.0.1
+-- Generation Time: Nov 17, 2016 at 09:32 PM
+-- Server version: 10.1.13-MariaDB
+-- PHP Version: 5.6.21
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+--
+-- Database: `conference`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `auth`
+--
+
+CREATE TABLE `auth` (
+  `user_id` int(11) NOT NULL,
+  `username` text NOT NULL,
+  `password` text NOT NULL,
+  `identity` text NOT NULL,
+  `first_name` text,
+  `last_name` text,
+  `title` text,
+  `company` text,
+  `organization` text,
+  `address` text,
+  `phone_number` text,
+  `email` text,
+  `status` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `auth`
+--
+
+INSERT INTO `auth` (`user_id`, `username`, `password`, `identity`, `first_name`, `last_name`, `title`, `company`, `organization`, `address`, `phone_number`, `email`, `status`) VALUES
+(16, 'zhisong', '$2y$10$VXwNNlOMSo26eP.9HPm5KeNmDyXfHVOW73LtwrprzD.j1B9QVSZ5O', 'Student', 'Zhisong', 'Ge', 'Intern', 'W2BI', 'ADVANTEST', '310 Cleveland Avenue', '2019121537', 'gez1@montclair.edu', 1),
+(17, 'jobs', '$2y$10$2FDjwArpY7SnZWW6dc1jvOXSRCpBKAnKq7N1QxCrfiYPZU6o2LZ3K', 'Presenter', 'Jobs', 'Gee', 'CEO', 'Apple', 'Apple', '1 apple road', '1234567890', 'jobs@apple.com', 0),
+(18, 'tudouer', '$2y$10$VXwNNlOMSo26eP.9HPm5KeNmDyXfHVOW73LtwrprzD.j1B9QVSZ5O', 'Reviewer', 'Tudouer', 'Gee', 'CEO', 'Apple', 'Apple', '1 apple road', '1234567890', 'jobs@apple.com', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `book_store`
+--
+
+CREATE TABLE `book_store` (
+  `book_id` int(11) NOT NULL,
+  `book_name` varchar(255) NOT NULL,
+  `book_price` float NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `book_store`
+--
+
+INSERT INTO `book_store` (`book_id`, `book_name`, `book_price`) VALUES
+(2, 'test book 2', 12.34),
+(3, 'text book 4', 111.111),
+(4, 'text bbb 5', 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `paper`
+--
+
+CREATE TABLE `paper` (
+  `paper_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `reviewer_id` int(11) NOT NULL DEFAULT '0',
+  `file_name` text NOT NULL,
+  `area` varchar(255) NOT NULL,
+  `subarea` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `paper`
+--
+
+INSERT INTO `paper` (`paper_id`, `user_id`, `reviewer_id`, `file_name`, `area`, `subarea`) VALUES
+(6, 16, 0, 'Receipt for Ticket Payment.pdf', '', ''),
+(7, 16, 0, 'Zhisong_Ge_App_Graduation-Final-Audit.pdf', '', ''),
+(8, 17, 0, 'JavaandHTML.pdf', '', ''),
+(9, 16, 18, 'MC-Fall-2016-Midterm.pdf', 'Cloud', 'Paas');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `auth`
+--
+ALTER TABLE `auth`
+  ADD PRIMARY KEY (`user_id`);
+
+--
+-- Indexes for table `book_store`
+--
+ALTER TABLE `book_store`
+  ADD PRIMARY KEY (`book_id`);
+
+--
+-- Indexes for table `paper`
+--
+ALTER TABLE `paper`
+  ADD PRIMARY KEY (`paper_id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `auth`
+--
+ALTER TABLE `auth`
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+--
+-- AUTO_INCREMENT for table `book_store`
+--
+ALTER TABLE `book_store`
+  MODIFY `book_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+--
+-- AUTO_INCREMENT for table `paper`
+--
+ALTER TABLE `paper`
+  MODIFY `paper_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
