@@ -30,6 +30,7 @@
                 <li><a href="program.php">Conference Program</a></li>
                 <li><a href="guidelines.php">Guidelines</a></li>
                 <li><a href="feedback.php">Comments and feedback</a></li>
+                <li><a href="book_store.php">Book Store</a></li>
             </ul>
         </li>
     </ul>

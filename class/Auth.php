@@ -94,6 +94,9 @@ class Auth
         unset($_SESSION['status']);
     }
 
+    /**
+     * @return bool
+     */
     public function is_active(){
         return isset($_SESSION['status']) and $_SESSION['status'] == 1;
     }
@@ -257,7 +260,10 @@ class Auth
         return $row;
     }
 
-
+    /**
+     * @param $uname
+     * @return array
+     */
     public function get_papers($uname){
         $user = $this->get_user_by_uname($uname);
 
